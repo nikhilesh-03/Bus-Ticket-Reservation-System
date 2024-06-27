@@ -27,8 +27,18 @@ public class Passenger extends User implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Passenger [Username = " + getUsername() + ", MobileNo = "
-				+ getMobileNo() + ", EmailId = " + getEmailId() + ", WalletBalance = " + walletBalance + "]";
+		return String.format(
+				"+----------------+----------------------------+\n" +
+						"| Passenger      | Value                      |\n" +
+						"+----------------+----------------------------+\n" +
+						"| Username       | %-26s |\n" +
+						"| MobileNo       | %-26s |\n" +
+						"| EmailId        | %-26s |\n" +
+						"| WalletBalance  | %-26.2f |\n" +
+						"+----------------+----------------------------+\n",
+				getUsername(), getMobileNo(), getEmailId(), walletBalance
+		);
 	}
+
 
 }

@@ -21,6 +21,9 @@ public interface PassengerService {
 			Map<String, Passenger> passengers, List<Transaction> transactions)
 			throws InvalidDetailsException, ProductException;
 
+	public boolean cancelTicket(int busId, int transactionId, int noOfSeat, String email, Map<Integer, Bus> bus,
+								Map<String, Passenger> passengers, List<Transaction> transactions) throws InvalidDetailsException, ProductException;
+
 	public boolean addMoneyToWallet(double amount, String email, Map<String, Passenger> passengers);
 
 	public double viewWalletBalance(String email, Map<String, Passenger> passengers);

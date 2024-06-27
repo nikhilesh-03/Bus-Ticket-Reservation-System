@@ -64,8 +64,7 @@ public class Main {
 					break;
 				case 4:
 
-					String upt = adminUpdateBus(sc, buses, busService);
-					System.out.println(upt);
+					adminUpdateBus(sc, buses, busService);
 					break;
 				case 5:
 					adminViewAllPassengers(passengers, pasService);
@@ -140,9 +139,12 @@ public class Main {
 		return temp;
 	}
 
-	public static void adminViewAllBus(Map<Integer, Bus> bus, BusService busService)
+	public static void adminViewAllBus(Map<Integer, Bus> buses, BusService busService)
 			throws ProductException {
-		busService.viewAllBuses(bus);
+		Map<Integer, Bus> busCount = busService.viewAllBuses(buses);
+		for (Map.Entry<Integer, Bus> entry : busCount.entrySet()) {
+			System.out.println(entry.getValue());
+		}
 	}
 
 	public static void adminDeleteProduct(Scanner sc, Map<Integer, Bus> buses, BusService busService)
@@ -153,7 +155,7 @@ public class Main {
 		busService.deleteBus(id, buses);
 	}
 
-	public static String adminUpdateBus(Scanner sc, Map<Integer, Bus> buses, BusService busService)
+	public static void adminUpdateBus(Scanner sc, Map<Integer, Bus> buses, BusService busService)
 			throws ProductException {
 		String result = null;
 		System.out.println("please enter the bus id of the bus which is to be updated");
@@ -180,8 +182,7 @@ public class Main {
 
 		Bus update = new Bus(id, name, totalSeat, busType, price, source, destination);
 
-		result = busService.updateBusDetails(id, update, buses);
-		return result;
+		busService.updateBusDetails(id, update, buses);
 	}
 
 	public static void adminViewAllPassengers(Map<String, Passenger> passengers, PassengerService pasService)
@@ -225,12 +226,13 @@ public class Main {
 			do {
 				System.out.println("Select the option of your choice");
 				System.out.println("Press 1 to view all buses");
-				System.out.println("Press 2 to book a ticket");
-				System.out.println("Press 3 to add money to a wallet");
-				System.out.println("Press 4 view wallet balance");
-				System.out.println("Press 5 view my details");
-				System.out.println("Press 6 view my transactions");
-				System.out.println("Press 7 to logout");
+				System.out.println("Press 2 to book the ticket");
+				System.out.println("Press 3 to cancel the ticket");
+				System.out.println("Press 4 to add money to a wallet");
+				System.out.println("Press 5 view wallet balance");
+				System.out.println("Press 6 view my details");
+				System.out.println("Press 7 view my transactions");
+				System.out.println("Press 8 to logout");
 				choice = sc.nextInt();
 
 				switch (choice) {
@@ -242,21 +244,25 @@ public class Main {
 					System.out.println(result);
 					break;
 				case 3:
+					String cancel = passengerCancelTicket(sc, email, buses, passengers, transactions, pasService);
+					System.out.println(cancel);
+					break;
+				case 4:
 					String moneyAdded = passengerAddMoneyToWallet(sc, email, passengers, pasService);
 					System.out.println(moneyAdded);
 					break;
-				case 4:
+				case 5:
 					double walletBalance = passengerViewWalletBalance(email, passengers, pasService);
 					System.out.println("Wallet balance is: " + walletBalance);
 					break;
-				case 5:
+				case 6:
 					passengerViewMyDetails(email, passengers, pasService);
 					break;
-				case 6:
+				case 7:
 					passengersViewPassengerTransactions(email, transactions, trnsactionService);
 					break;
-				case 7:
-					System.out.println("you have successsfully logout");
+				case 8:
+					System.out.println("you have successfully logout");
 					break;
 				default:
 					System.out.println("invalid choice");
@@ -313,11 +319,30 @@ public class Main {
 			throws InvalidDetailsException, ProductException {
 		System.out.println("Please enter the bus id");
 		int id = sc.nextInt();
-		System.out.println("How many ticket would you like to book?");
+		System.out.println("How many seats/tickets would you like to book?");
 		int qty = sc.nextInt();
 		pasService.bookTicket(id, qty, email, buses, passengers, transactions);
 
 		return "You have successfully book the ticket";
+
+	}
+
+	public static String passengerCancelTicket(Scanner sc, String email, Map<Integer, Bus> buses,
+			Map<String, Passenger> passengers, List<Transaction> transactions, PassengerService pasService)
+			throws InvalidDetailsException, ProductException {
+
+		System.out.println("Please enter the transaction id");
+		int transactionId = sc.nextInt();
+
+		System.out.println("Please enter the bus id");
+		int busId = sc.nextInt();
+
+		System.out.println("How many seats/tickets would you like to cancel?");
+		int qty = sc.nextInt();
+
+		pasService.cancelTicket(busId, transactionId, qty, email, buses, passengers, transactions);
+
+		return "You have successfully cancelled your ticket";
 
 	}
 	
@@ -370,7 +395,7 @@ public class Main {
 
 		Scanner sc = new Scanner(System.in);
 
-		System.out.println("Welcome , to Bus Ticket Reservation System...!");
+		System.out.println("WELCOME, TO BUS TICKET RESERVATION SYSTEM...!");
 
 		try {
 
@@ -412,6 +437,7 @@ public class Main {
 			try {
 				ObjectOutputStream boos = new ObjectOutputStream(new FileOutputStream("Bus.ser"));
 				boos.writeObject(buses);
+
 				ObjectOutputStream poos = new ObjectOutputStream(new FileOutputStream("Person.ser"));
 				poos.writeObject(passengers);
 

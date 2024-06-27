@@ -107,8 +107,22 @@ public class Transaction implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Transaction [Username = " + username + ", Email = " + email + ", busId=" + busId + ", busName=" + busName
-				+ ", No. Of Booked Seats = " + noOfSeat + ", Per seat Price ="  + price + ", Total Bill = " + total + ", Transaction Date = " + dt + "]";
+		return String.format(
+				"+----------------------+----------------------------+\n" +
+						"| Transaction          | Value                      |\n" +
+						"+----------------------+----------------------------+\n" +
+						"| Username             | %-26s |\n" +
+						"| Email                | %-26s |\n" +
+						"| busId                | %-26d |\n" +
+						"| busName              | %-26s |\n" +
+						"| No. Of Booked Seats  | %-26d |\n" +
+						"| Per seat Price       | %-26.2f |\n" +
+						"| Total Bill           | %-26.2f |\n" +
+						"| Transaction Date     | %-26s |\n" +
+						"+----------------------+----------------------------+\n",
+				username, email, busId, busName, noOfSeat, price, total, dt.toString()
+		);
 	}
+
 
 }

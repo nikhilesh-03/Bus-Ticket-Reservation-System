@@ -201,7 +201,7 @@ public class PassengerServiceImpl implements PassengerService {
 
 	@Override
 	public boolean bookTicket(int busId, int noOfSeat, String email, Map<Integer, Bus> bus,
-			Map<String, Passenger> passengers, List<Transaction> transactions) throws InvalidDetailsException, ProductException {
+							  Map<String, Passenger> passengers, List<Transaction> transactions) throws InvalidDetailsException, ProductException {
 		try (Connection conn = DBConnection.getConnection()) {
 			String busQuery = "SELECT * FROM Bus WHERE busId = ?";
 			PreparedStatement busPs = conn.prepareStatement(busQuery);
@@ -250,30 +250,104 @@ public class PassengerServiceImpl implements PassengerService {
 						conn.commit();
 						conn.setAutoCommit(true);
 
+						// Update bus map
+						Bus bookedBus = bus.get(busId);
+						if (bookedBus != null) {
+							bookedBus.setTotalSeat(totalSeats - noOfSeat);
+						} else {
+							throw new InvalidDetailsException("Bus not found in the map.");
+						}
+
 						psng.setWalletBalance(psng.getWalletBalance() - totalPrice);
-						bus.get(busId).setTotalSeat(totalSeats - noOfSeat);
 						Transaction tr = new Transaction(psng.getUsername(), email, busId, busRs.getString("busName"), noOfSeat, pricePerSeat, totalPrice, LocalDate.now());
 						transactions.add(tr);
 
 						return true;
-					}
-					else {
+					} else {
 						throw new InvalidDetailsException("Wallet balance is not sufficient");
 					}
-				}
-				else {
+				} else {
 					throw new InvalidDetailsException("Number of seats are not sufficient");
 				}
-			}
-			else {
+			} else {
 				throw new InvalidDetailsException("Bus not available with id: " + busId);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new ProductException("Error occurred while booking ticket.");
 		}
-
-//		return false;
 	}
+
+	@Override
+	public boolean cancelTicket(int busId, int transactionId, int noOfCancelledSeat, String email, Map<Integer, Bus> bus,
+								Map<String, Passenger> passengers, List<Transaction> transactions) throws InvalidDetailsException, ProductException {
+		try (Connection conn = DBConnection.getConnection()) {
+			String transactionQuery = "SELECT * FROM Transaction WHERE transactionId = ?" ;
+			PreparedStatement transactionPs = conn.prepareStatement(transactionQuery);
+			transactionPs.setInt(1, transactionId);
+			ResultSet transactionRs = transactionPs.executeQuery();
+
+			if (transactionRs.next()) {
+				int bookedSeats = transactionRs.getInt("noOfBookedSeats");
+				double pricePerSeat = transactionRs.getDouble("pricePerSeat");
+				double totalPrice = pricePerSeat * noOfCancelledSeat;
+
+				if (bookedSeats >= noOfCancelledSeat) {
+					Passenger psng = passengers.get(email);
+
+					if (psng == null) {
+						throw new InvalidDetailsException("Passenger not found with email: " + email);
+					}
+
+					conn.setAutoCommit(false);
+
+					// Refund wallet balance
+					String updateWalletQuery = "UPDATE Passenger SET walletBalance = walletBalance + ? WHERE emailId = ?";
+					PreparedStatement updateWalletPs = conn.prepareStatement(updateWalletQuery);
+					updateWalletPs.setDouble(1, totalPrice);
+					updateWalletPs.setString(2, email);
+					updateWalletPs.executeUpdate();
+
+					// Update bus seats
+					String updateBusQuery = "UPDATE Bus SET totalSeats = totalSeats + ? WHERE busId = ?";
+					PreparedStatement updateBusPs = conn.prepareStatement(updateBusQuery);
+					updateBusPs.setInt(1, noOfCancelledSeat);
+					updateBusPs.setInt(2, busId);
+					updateBusPs.executeUpdate();
+
+					// Update transaction
+					int remainingSeats = bookedSeats - noOfCancelledSeat;
+					if (remainingSeats > 0) {
+						String updateTransactionQuery = "UPDATE Transaction SET noOfBookedSeats = ?, totalPrice = ? WHERE transactionId = ?";
+						PreparedStatement updateTransactionPs = conn.prepareStatement(updateTransactionQuery);
+						updateTransactionPs.setInt(1, remainingSeats);
+						updateTransactionPs.setDouble(2, pricePerSeat * remainingSeats);
+						updateTransactionPs.setInt(3, transactionId);
+						updateTransactionPs.executeUpdate();
+					} else {
+						String deleteTransactionQuery = "DELETE FROM Transaction WHERE transactionID = ?";
+						PreparedStatement deleteTransactionPs = conn.prepareStatement(deleteTransactionQuery);
+						deleteTransactionPs.setInt(1, transactionId);
+						deleteTransactionPs.executeUpdate();
+					}
+
+					conn.commit();
+					conn.setAutoCommit(true);
+
+					return true;
+				}
+				else {
+					throw new InvalidDetailsException("Number of seats to cancel exceeds booked seats");
+				}
+			}
+			else {
+				throw new InvalidDetailsException("No booking found for the given Transaction ID");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ProductException("Error occurred while canceling ticket.");
+		}
+	}
+
 
 }

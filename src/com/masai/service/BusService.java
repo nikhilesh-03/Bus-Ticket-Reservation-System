@@ -13,9 +13,9 @@ public interface BusService {
 
 	public String addBus(Bus bus, Map<Integer, Bus> buses) throws DuplicateDataException;
 
-	public void viewAllBuses(Map<Integer, Bus> buses) throws ProductException;
+	public Map<Integer, Bus> viewAllBuses(Map<Integer, Bus> buses) throws ProductException;
 
 	public void deleteBus(int busId, Map<Integer, Bus> buses) throws ProductException;
 
-	public String updateBusDetails(int busId, Bus bus, Map<Integer, Bus> buses) throws ProductException;
+	public void updateBusDetails(int busId, Bus bus, Map<Integer, Bus> buses) throws ProductException;
 }

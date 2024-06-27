@@ -103,11 +103,23 @@ public class Bus implements Serializable{
 		this.price = price;
 	}
 
-	@Override
 	public String toString() {
-		return "Bus { id = " + id + ", busName = " + busName + ", source = " + source + ", destination = " + destination + ", busType = " + busType
-				+ ", departureTime = " + departureTime + ", arrivalTime = " + arrivalTime + ", totalSeat = " + totalSeat
-				+ ", price = " + price + "}";
+		return String.format(
+				"+----------------+----------------------------+\n" +
+						"| Bus            | Value                      |\n" +
+						"+----------------+----------------------------+\n" +
+						"| id             | %-26d |\n" +
+						"| busName        | %-26s |\n" +
+						"| source         | %-26s |\n" +
+						"| destination    | %-26s |\n" +
+						"| busType        | %-26s |\n" +
+						"| departureTime  | %-26s |\n" +
+						"| arrivalTime    | %-26s |\n" +
+						"| totalSeats     | %-26d |\n" +
+						"| ticketPrice    | %-26.2f |\n" +
+						"+----------------+----------------------------+\n",
+				id, busName, source, destination, busType, departureTime, arrivalTime, totalSeat, price
+		);
 	}
 
 	@Override

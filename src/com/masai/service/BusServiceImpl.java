@@ -49,7 +49,7 @@ public class BusServiceImpl implements BusService{
 	
 	
 	@Override
-	public void viewAllBuses(Map<Integer, Bus> buses) throws ProductException {
+	public Map<Integer, Bus> viewAllBuses(Map<Integer, Bus> buses) throws ProductException {
 		try (Connection conn = DBConnection.getConnection()) {
 			String query = "SELECT * FROM Bus";
 			Statement stmt = conn.createStatement();
@@ -69,9 +69,7 @@ public class BusServiceImpl implements BusService{
 			}
 
 			if (buses != null && !buses.isEmpty()) {
-				for (Map.Entry<Integer, Bus> entry : buses.entrySet()) {
-					System.out.println(entry.getValue());
-				}
+				return buses;
 			}
 			else {
 				throw new ProductException("No Buses are there...");
@@ -85,6 +83,7 @@ public class BusServiceImpl implements BusService{
 
 	@Override
 	public void deleteBus(int busId, Map<Integer, Bus> buses) throws ProductException {
+		buses = viewAllBuses(buses);
 		if (buses != null && !buses.isEmpty()) {
 			if (buses.containsKey(busId)) {
 				try (Connection conn = DBConnection.getConnection()) {
@@ -115,10 +114,12 @@ public class BusServiceImpl implements BusService{
 	}
 
 	@Override
-	public String updateBusDetails(int busId, Bus bus, Map<Integer, Bus> buses) throws ProductException {
+	public void updateBusDetails(int busId, Bus bus, Map<Integer, Bus> buses) throws ProductException {
 
 		LocalDateTime now = LocalDateTime.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+		buses = viewAllBuses(buses);
 
 		if (buses != null && !buses.isEmpty()) {
 			if (buses.containsKey(busId)) {
@@ -138,7 +139,7 @@ public class BusServiceImpl implements BusService{
 					int rowsUpdated = ps.executeUpdate();
 					if (rowsUpdated > 0) {
 						buses.put(busId, bus);
-						return "Bus details have been successfully updated";
+						System.out.println("Bus details have been successfully updated");
 					}
 					else {
 						throw new ProductException("Bus not found in the database.");
