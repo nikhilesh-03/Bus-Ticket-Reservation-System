@@ -111,7 +111,7 @@ public class Main {
 		System.out.println("Enter the bus name");
 		String name = sc.next();
 		
-		System.out.println("Enter seat size");
+		System.out.println("Enter seat count");
 		int totalSeat = sc.nextInt();
 		
 		System.out.println("Enter bus type");

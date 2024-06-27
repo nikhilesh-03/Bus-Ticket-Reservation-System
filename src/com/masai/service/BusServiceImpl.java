@@ -101,7 +101,7 @@ public class BusServiceImpl implements BusService{
 					}
 				}
 				catch (SQLException e) {
-					throw new ProductException("Unable to delete bus.");
+					throw new ProductException("Unable to delete bus due to " + e.getMessage());
 				}
 			}
 			else {
