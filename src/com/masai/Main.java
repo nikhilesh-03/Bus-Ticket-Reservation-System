@@ -356,8 +356,12 @@ public class Main {
 		System.out.println("Please enter the amount");
 		double money = sc.nextDouble();
 		boolean added = pasService.addMoneyToWallet(money, email, passengers);
-
-		return "Amount: " + money + " successfully added to your wallet";
+		if(added){
+			return "Amount: " + money + " successfully added to your wallet";
+		}
+		else{
+			return "Negative money can't be added";
+		}
 	}
 	
 	

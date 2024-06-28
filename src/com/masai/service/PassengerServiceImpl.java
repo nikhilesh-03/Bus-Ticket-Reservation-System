@@ -96,24 +96,28 @@ public class PassengerServiceImpl implements PassengerService {
 	
 	@Override
 	public boolean addMoneyToWallet(double amount, String email, Map<String, Passenger> passengers) {
+		if(amount >= 0){
+			try (Connection conn = DBConnection.getConnection()) {
+				String query = "UPDATE Passenger SET walletBalance = walletBalance + ? WHERE emailId = ?";
+				PreparedStatement ps = conn.prepareStatement(query);
+				ps.setDouble(1, amount);
+				ps.setString(2, email);
 
-		try (Connection conn = DBConnection.getConnection()) {
-			String query = "UPDATE Passenger SET walletBalance = walletBalance + ? WHERE emailId = ?";
-			PreparedStatement ps = conn.prepareStatement(query);
-			ps.setDouble(1, amount);
-			ps.setString(2, email);
-
-			int rowsUpdated = ps.executeUpdate();
-			if (rowsUpdated > 0) {
-				Passenger psng = passengers.get(email);
-				psng.setWalletBalance(psng.getWalletBalance() + amount);
-				passengers.put(email, psng);
-				return true;
+				int rowsUpdated = ps.executeUpdate();
+				if (rowsUpdated > 0) {
+					Passenger psng = passengers.get(email);
+					psng.setWalletBalance(psng.getWalletBalance() + amount);
+					passengers.put(email, psng);
+					return true;
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+			return false;
 		}
-		return false;
+		else{
+			return false;
+		}
 	}
 
 	@Override
@@ -249,18 +253,6 @@ public class PassengerServiceImpl implements PassengerService {
 
 						conn.commit();
 						conn.setAutoCommit(true);
-
-						// Update bus map
-						Bus bookedBus = bus.get(busId);
-						if (bookedBus != null) {
-							bookedBus.setTotalSeat(totalSeats - noOfSeat);
-						} else {
-							throw new InvalidDetailsException("Bus not found in the map.");
-						}
-
-						psng.setWalletBalance(psng.getWalletBalance() - totalPrice);
-						Transaction tr = new Transaction(psng.getUsername(), email, busId, busRs.getString("busName"), noOfSeat, pricePerSeat, totalPrice, LocalDate.now());
-						transactions.add(tr);
 
 						return true;
 					} else {
