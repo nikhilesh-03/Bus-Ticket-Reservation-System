@@ -269,7 +269,7 @@ public class Main {
 					break;
 				}
 
-			} while (choice <= 6);
+			} while (choice <= 7);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -310,7 +310,11 @@ public class Main {
 
 	public static void passengerViewAllBuses(Map<Integer, Bus> buses, BusService busService)
 			throws ProductException {
-		busService.viewAllBuses(buses);
+
+		Map<Integer, Bus> busCount = busService.viewAllBuses(buses);
+		for (Map.Entry<Integer, Bus> entry : busCount.entrySet()) {
+			System.out.println(entry.getValue());
+		}
 	}
 
 	
